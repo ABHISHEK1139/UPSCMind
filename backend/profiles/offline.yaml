@@ -1,0 +1,25 @@
+# Hermes V2 — Offline Profile (local models only)
+name: offline
+debug: true
+log_level: DEBUG
+
+llm:
+  default_model: local/llama-3-8b-instruct
+  cache_ttl: 3600
+  max_retries: 2
+
+retrieval:
+  top_k: 10
+  rerank_top_k: 5
+
+orchestrator:
+  max_revisions: 2
+  quality_threshold: 0.85
+
+governance:
+  rate_limit_per_minute: 999
+  max_concurrent_agents: 5
+
+training_data:
+  min_quality_score: 0.9
+  auto_export: false

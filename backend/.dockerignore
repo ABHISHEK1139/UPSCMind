@@ -1,0 +1,62 @@
+# ═══════════════════════════════════════════════════════════════
+# Docker Ignore — Exclude unnecessary files from build context
+# ═══════════════════════════════════════════════════════════════
+
+# Cache directories
+.cache/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.deepeval/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+LICENSE
+
+# Local output data (will be created at runtime)
+dataset/training_data/
+dataset/exports/
+data/
+logs/
+
+# Downloaded models (will be downloaded inside container)
+models/
+*.bin
+*.safetensors
+*.pt
+*.pth
+
+# Node modules (for frontend builds)
+node_modules/
+
+# Backup files
+*.bak
+*.backup
+v1/

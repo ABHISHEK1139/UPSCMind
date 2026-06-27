@@ -1,0 +1,5 @@
+environment: development
+debug: true
+cache:
+  enabled: true
+  type: redis

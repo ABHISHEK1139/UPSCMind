@@ -1,0 +1,14 @@
+# Root Docker Ignore
+.git/
+.gitignore
+*.md
+LICENSE
+.vscode/
+.idea/
+.cache/
+__pycache__/
+.venv/
+venv/
+node_modules/
+v1/
+*.bak

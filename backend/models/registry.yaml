@@ -1,0 +1,39 @@
+# ═══════════════════════════════════════════════════════════════
+# Hermes V2 — Model Registry & Cost Policy Engine
+# ═══════════════════════════════════════════════════════════════
+# Decouples model selection from code. Routes based on task
+# complexity: cheap model for simple tasks, reasoning model
+# for complex verification.
+# ═══════════════════════════════════════════════════════════════
+
+models:
+  # ── All tasks use owl-alpha ──────────────────────────────
+  primary:
+    provider: openrouter
+    model: owl-alpha
+    max_tokens: 4096
+    cost_per_1m_input: 0.0
+    cost_per_1m_output: 0.0
+    use_for: [drafting, topic_detection, planning, critique, fact_checking, verification, revision, embedding]
+    cost_per_1m_input: 0.02
+    use_for: [embedding]
+
+# ── Cost Policy ─────────────────────────────────────────────
+cost_policy:
+  max_cost_per_answer_usd: 0.05
+  max_cost_per_day_usd: 10.0
+  max_tokens_per_answer: 8000
+  prefer_cheaper_model: true
+  fallback_on_budget_exceeded: true
+
+# ── Task Routing ────────────────────────────────────────────
+task_routing:
+  topic_detection: fast_primary
+  retrieval: fast_primary
+  planning: fast_primary
+  drafting: fast_primary
+  critique: reasoning_primary
+  fact_checking: reasoning_primary
+  verification: reasoning_primary
+  revision: fast_secondary
+  constitutional_check: reasoning_primary

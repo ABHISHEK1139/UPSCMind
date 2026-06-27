@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment (keep .env.example, ignore .env)
+.env
+.env.local
+.env.production
+!.env.example
+
+# Databases (large binary files - use LFS or regenerate)
+databases/
+*.db
+
+# Logs
+logs/
+*.log
+
+# Cache
+.cache/
+.dspy_cache/
+.deepeval/
+.ruff_cache/
+.nv/
+
+# Training data output
+training_data/
+dataset/
+
+# Dependencies
+frontend/node_modules/
+
+# Local
+.local/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Test outputs (regenerate with test_upsc.py)
+dataset/human_test_upsc/
+dataset/results.jsonl

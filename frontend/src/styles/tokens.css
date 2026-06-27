@@ -1,0 +1,74 @@
+:root {
+  --bg-color: #050510;
+  --app-bg: rgba(13, 17, 33, 0.7);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  
+  --neon-cyan: #00f0ff;
+  --neon-cyan-dim: rgba(0, 240, 255, 0.2);
+  --neon-cyan-bg: rgba(0, 240, 255, 0.05);
+  
+  --neon-purple: #b026ff;
+  --neon-purple-dim: rgba(176, 38, 255, 0.2);
+  --neon-purple-bg: rgba(176, 38, 255, 0.05);
+  
+  --success-green: #00ff88;
+  --danger-red: #ff3366;
+  
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, monospace;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(0, 240, 255, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(176, 38, 255, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(13, 17, 33, 1) 0%, transparent 100%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Glassmorphism App Frame */
+.app-frame {
+  background: var(--app-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  box-shadow: 
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.inner-panel {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

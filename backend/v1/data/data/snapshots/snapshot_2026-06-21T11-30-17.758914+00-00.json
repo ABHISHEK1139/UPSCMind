@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-06-21T11-30-17.758914+00-00",
+  "status": "sleeping",
+  "epoch": "EPOCH_SLEEP",
+  "beliefs": {},
+  "graph_metrics": {},
+  "active_weak_signals": [],
+  "confidence_states": {},
+  "attention_allocations": {},
+  "drift_indicators": {}
+}
