@@ -1,26 +1,22 @@
+# ═══════════════════════════════════════════════════════════════
+# Hermes V2 — Docker Compose Configuration
+# ═══════════════════════════════════════════════════════════════
+#
+# USAGE:
+#   Start all services (8 core + 2 optional):
+#     docker compose up -d
+#
+#   Start only core services (no frontend/traefik):
+#     docker compose up -d postgres redis qdrant neo4j minio backend celery_worker celery_beat
+#
+#   Start with frontend + traefik:
+#     docker compose --profile frontend up -d
+#
+# ═══════════════════════════════════════════════════════════════
+
 services:
   # ═══════════════════════════════════════════════════════════════
-  # EDGE LAYER — API Gateway & Routing
-  # ═══════════════════════════════════════════════════════════════
-  traefik:
-    image: traefik:v2.10
-    container_name: hermes_traefik
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-    ports:
-      - "80:80"
-      - "8080:8080"    # Traefik dashboard
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - frontend_net
-    restart: unless-stopped
-
-  # ═══════════════════════════════════════════════════════════════
-  # MEMORY LAYER — Persistent State Databases
+  # CORE: PostgreSQL — Relational State Store
   # ═══════════════════════════════════════════════════════════════
   postgres:
     image: postgres:16-alpine
@@ -45,6 +41,9 @@ services:
       timeout: 5s
       retries: 5
 
+  # ═══════════════════════════════════════════════════════════════
+  # CORE: Qdrant — Vector Search & Embeddings
+  # ═══════════════════════════════════════════════════════════════
   qdrant:
     image: qdrant/qdrant:latest
     container_name: hermes_qdrant
@@ -59,6 +58,9 @@ services:
           cpus: '2.0'
           memory: 4G
 
+  # ═══════════════════════════════════════════════════════════════
+  # CORE: Neo4j — Knowledge Graph
+  # ═══════════════════════════════════════════════════════════════
   neo4j:
     image: neo4j:5
     container_name: hermes_neo4j
@@ -81,6 +83,9 @@ services:
       timeout: 10s
       retries: 5
 
+  # ═══════════════════════════════════════════════════════════════
+  # CORE: Redis — Cache, Events, Celery Broker
+  # ═══════════════════════════════════════════════════════════════
   redis:
     image: redis:7-alpine
     container_name: hermes_redis
@@ -105,7 +110,7 @@ services:
       retries: 5
 
   # ═══════════════════════════════════════════════════════════════
-  # OBJECT STORAGE — Datasets, Logs, Exports
+  # CORE: MinIO — Object Storage (S3-compatible)
   # ═══════════════════════════════════════════════════════════════
   minio:
     image: minio/minio:latest
@@ -115,8 +120,8 @@ services:
       MINIO_ROOT_USER: hermes_admin
       MINIO_ROOT_PASSWORD: hermes_secret_2026
     ports:
-      - "9000:9000"    # S3 API
-      - "9001:9001"    # Console
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - ./databases/minio:/data
     networks:
@@ -129,7 +134,7 @@ services:
       retries: 3
 
   # ═══════════════════════════════════════════════════════════════
-  # COGNITION LAYER — FastAPI Backend
+  # CORE: Backend — FastAPI Application Server
   # ═══════════════════════════════════════════════════════════════
   backend:
     build:
@@ -142,7 +147,7 @@ services:
       - DATABASE_URL=postgresql+asyncpg://upsc_user:upsc_password@postgres:5432/upsc_db
       - REDIS_URL=redis://redis:6379/0
       - NEO4J_URI=bolt://neo4j:7687
-      - NEO4J_USER=neo4j
+      - NEO4J_USER: neo4j
       - NEO4J_PASSWORD=upsc_neo4j_password
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
@@ -168,13 +173,7 @@ services:
       qdrant:
         condition: service_started
     networks:
-      - frontend_net
       - backend_net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
-      - "traefik.http.routers.backend.entrypoints=web"
-      - "traefik.http.services.backend.loadbalancer.server.port=8000"
     volumes:
       - ./backend:/app
       - hermes_data:/app/data
@@ -186,8 +185,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
-    # GPU support for NVIDIA RTX 3050
-    gpus: all
     deploy:
       resources:
         limits:
@@ -195,17 +192,12 @@ services:
           memory: 4G
 
   # ═══════════════════════════════════════════════════════════════
-  # WORKER LAYER — Background Tasks (Celery)
+  # CORE: Celery Worker — Background Task Processing
   # ═══════════════════════════════════════════════════════════════
   celery_worker:
     image: hermes_v2-backend
     container_name: hermes_celery_worker
     command: celery -A workers.celery_app worker --loglevel=info --concurrency=2
-    healthcheck:
-      test: ["CMD", "python", "-c", "import celery; print('ok')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     environment:
       - DATABASE_URL=postgresql+asyncpg://upsc_user:upsc_password@postgres:5432/upsc_db
       - REDIS_URL=redis://redis:6379/0
@@ -230,15 +222,13 @@ services:
       - backend_net
     restart: unless-stopped
 
+  # ═══════════════════════════════════════════════════════════════
+  # CORE: Celery Beat — Scheduled Task Scheduler
+  # ═══════════════════════════════════════════════════════════════
   celery_beat:
     image: hermes_v2-backend
     container_name: hermes_celery_beat
     command: celery -A workers.celery_app beat --loglevel=info
-    healthcheck:
-      test: ["CMD", "python", "-c", "import celery; print('ok')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/1
       - CELERY_RESULT_BACKEND=redis://redis:6379/2
@@ -250,7 +240,31 @@ services:
     restart: unless-stopped
 
   # ═══════════════════════════════════════════════════════════════
-  # FRONTEND LAYER — React + Vite
+  # OPTIONAL: Traefik — API Gateway & Load Balancer
+  # Only needed if you want routing/dashboard. Not required for API use.
+  # ═══════════════════════════════════════════════════════════════
+  traefik:
+    image: traefik:v2.10
+    container_name: hermes_traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - frontend_net
+    restart: unless-stopped
+    profiles:
+      - frontend
+
+  # ═══════════════════════════════════════════════════════════════
+  # OPTIONAL: Frontend — React + Vite UI
+  # Only needed if you want the web UI. API works without it.
   # ═══════════════════════════════════════════════════════════════
   frontend:
     build:
@@ -261,16 +275,12 @@ services:
       - VITE_API_URL=/api
     networks:
       - frontend_net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.frontend.entrypoints=web"
-      - "traefik.http.routers.frontend.priority=1"
-      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
     restart: unless-stopped
+    profiles:
+      - frontend
 
 networks:
   frontend_net:

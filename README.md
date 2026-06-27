@@ -78,7 +78,7 @@ This automatically:
 - ✅ Checks Docker is installed and running
 - ✅ Creates `.env` from `.env.example`
 - ✅ Creates all required directories
-- ✅ Pulls and builds all 10 containers
+- ✅ Pulls and builds all 8 core containers
 - ✅ Waits for health checks
 - ✅ Runs all 199 tests
 
@@ -192,7 +192,7 @@ docker exec hermes_backend python3 -m pytest tests/ --cov=backend --cov-report=h
 | **LLM** | OWL Alpha via OpenRouter (LiteLLM) |
 | **Databases** | PostgreSQL 16, Qdrant 1.18, Neo4j 6.2, Redis 6.4 |
 | **Frontend** | React, Vite |
-| **Infrastructure** | Docker, Traefik, Celery, MinIO |
+| **Infrastructure** | Docker (8 core containers), Celery, MinIO |
 | **Testing** | pytest, pytest-asyncio (199 tests) |
 
 ---
@@ -241,7 +241,17 @@ docker exec hermes_backend python3 -m pytest tests/ -q
 
 ---
 
-## 📄 License
+## � Contact
+
+I'm a Computer Science student passionate about AI, LLMs, and educational technology.
+
+For questions, feedback, collaboration, internships, or research opportunities:
+
+**Email:** [ak612520208365@gmail.com](mailto:ak612520208365@gmail.com)
+
+---
+
+## �📄 License
 
 MIT License — see [LICENSE](LICENSE).
 
@@ -252,7 +262,7 @@ MIT License — see [LICENSE](LICENSE).
 | Metric | Count |
 |--------|-------|
 | Domain modules | 14 |
-| Docker containers | 10 |
+| Docker containers | 8 core + 2 optional |
 | Test files | 17 |
 | Tests | 199 |
 | API endpoints | 20+ |
@@ -260,6 +270,8 @@ MIT License — see [LICENSE](LICENSE).
 | Database tables | 10 |
 | LLM pipeline stages | 8 |
 | Review dimensions | 10 |
+| Dataset files | 85 |
+| Dataset size | 20.55 MB |
 
 ---
 
