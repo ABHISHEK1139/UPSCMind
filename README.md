@@ -40,6 +40,33 @@ AI-powered answer generation and learning platform for UPSC Civil Services Exami
 
 ## 🚀 Quick Start
 
+### Option 1: One-Click Setup (Recommended)
+
+**Windows (PowerShell):**
+```powershell
+git clone https://github.com/yourusername/hermes-v2.git
+cd hermes-v2
+.\start.ps1
+```
+
+**Linux / macOS (Bash):**
+```bash
+git clone https://github.com/yourusername/hermes-v2.git
+cd hermes-v2
+chmod +x scripts/*.sh
+./scripts/setup.sh
+```
+
+This automatically:
+- ✅ Checks Docker is installed and running
+- ✅ Creates `.env` from `.env.example`
+- ✅ Creates all required directories
+- ✅ Pulls and builds all 10 containers
+- ✅ Waits for health checks
+- ✅ Runs all 199 tests
+
+### Option 2: Manual Setup
+
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/hermes-v2.git
@@ -54,10 +81,30 @@ docker compose up -d
 
 # Run tests
 docker exec hermes_backend python3 -m pytest tests/ -v
+```
 
-# API: http://localhost:8000/api
-# API Docs: http://localhost:8000/api/docs
-# Traefik Dashboard: http://localhost:8080
+### Useful Commands
+
+| Command | Description |
+|---------|-------------|
+| `.\start.ps1` (Win) / `./scripts/setup.sh` (Linux) | Start everything |
+| `.\stop.ps1` (Win) / `./scripts/stop.sh` (Linux) | Stop all services |
+| `.\health.ps1` (Win) / `./scripts/health.sh` (Linux) | Check health |
+| `docker exec hermes_backend python3 -m pytest tests/ -v` | Run tests |
+| `docker logs hermes_backend` | View backend logs |
+| `docker compose down -v` | Remove all data |
+
+### Access Points
+
+| Service | URL |
+|---------|-----|
+| API | http://localhost:8000/api |
+| API Docs | http://localhost:8000/api/docs |
+| Traefik Dashboard | http://localhost:8080 |
+| MinIO Console | http://localhost:9001 |
+| Frontend | http://localhost:5173 |
+
+> **First time?** The initial build takes 5-10 minutes. Subsequent starts are under 30 seconds.
 ```
 
 ## API Endpoints
