@@ -9,6 +9,7 @@ import asyncio
 import json
 import time
 import sys
+import pytest
 
 logging_enabled = False
 
@@ -16,6 +17,7 @@ def log(msg):
     if logging_enabled:
         print(msg)
 
+@pytest.mark.asyncio
 async def test_full_pipeline():
     """Test the complete student journey end-to-end."""
     from core.database import AsyncSessionLocal

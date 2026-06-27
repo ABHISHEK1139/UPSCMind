@@ -2,12 +2,14 @@
 import asyncio
 import json
 import logging
+import pytest
 
 logging.basicConfig(level=logging.DEBUG)
 
 from core.llm_gateway import LLMGateway
 
 
+@pytest.mark.asyncio
 async def test_llm_directly():
     """Test if LLM returns empty responses."""
     gateway = LLMGateway()
