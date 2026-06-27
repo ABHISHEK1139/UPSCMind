@@ -1,0 +1,28 @@
+# Hermes V2 — Production Profile
+name: production
+debug: false
+log_level: WARNING
+
+llm:
+  default_model: openrouter/google/gemini-2.5-flash
+  cache_ttl: 7200
+  max_retries: 5
+
+retrieval:
+  top_k: 15
+  rerank_top_k: 7
+  dense_weight: 0.6
+  sparse_weight: 0.4
+
+orchestrator:
+  max_revisions: 3
+  quality_threshold: 0.85
+
+governance:
+  rate_limit_per_minute: 30
+  max_concurrent_agents: 10
+
+training_data:
+  min_quality_score: 0.9
+  auto_export: true
+  export_format: chatml

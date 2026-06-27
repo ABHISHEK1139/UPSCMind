@@ -1,0 +1,96 @@
+# ═══════════════════════════════════════════════════════════════
+# Hermes V2 — GPU-Enabled Backend Dockerfile (NVIDIA RTX)
+# ═══════════════════════════════════════════════════════════════
+# Optimized for NVIDIA GPUs with CUDA support
+# Requires: NVIDIA Container Toolkit installed on host
+# ═══════════════════════════════════════════════════════════════
+
+# ── Stage 1: Builder with CUDA ────────────────────────────────────
+FROM nvidia/cuda:12.4.1-cudnn9-devel-ubuntu22.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /build
+
+# Install Python 3.12 and build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.12 \
+    python3.12-dev \
+    python3.12-venv \
+    python3-pip \
+    build-essential \
+    gcc \
+    g++ \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python3.12 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Copy requirements first (for Docker layer caching)
+COPY requirements-gpu.txt .
+
+# Install Python dependencies with retry logic
+# GPU packages (torch, sentence-transformers) are large — use longer timeout
+RUN pip install --no-cache-dir --retries 5 --timeout 600 \
+    -r requirements-gpu.txt || \
+    (echo "First attempt failed, retrying..." && \
+     pip install --no-cache-dir --retries 10 --timeout 900 \
+     -r requirements-gpu.txt)
+
+# ── Stage 2: Runtime with CUDA ────────────────────────────────────
+FROM nvidia/cuda:12.4.1-cudnn9-runtime-ubuntu22.04 AS runtime
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+# Install Python 3.12 and runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.12 \
+    python3.12-venv \
+    curl \
+    tini \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Create non-root user
+RUN groupadd -r hermes && useradd -r -g hermes -d /app -s /bin/bash hermes
+
+WORKDIR /app
+
+# Copy application source
+COPY --chown=hermes:hermes . .
+
+# Create data directories
+RUN mkdir -p /app/dataset/training_data /app/data /app/logs && \
+    chown -R hermes:hermes /app
+
+USER hermes
+
+EXPOSE 8000
+
+# Health check with longer startup period (GPU model loading takes time)
+HEALTHCHECK --interval=30s --timeout=15s --retries=5 --start-period=120s \
+    CMD curl -f http://localhost:8000/api/health || exit 1
+
+ENTRYPOINT ["tini", "--"]
+
+# Run with GPU-optimized settings
+CMD ["uvicorn", "main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8000", \
+     "--workers", "1", \
+     "--timeout-keep-alive", "120", \
+     "--access-log"]

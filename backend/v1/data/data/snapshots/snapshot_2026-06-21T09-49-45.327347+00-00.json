@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-06-21T09-49-45.327347+00-00",
+  "status": "active",
+  "epoch": "EPOCH_SNAPSHOT",
+  "beliefs": {},
+  "graph_metrics": {},
+  "active_weak_signals": [
+    {
+      "count": 0
+    }
+  ],
+  "confidence_states": {},
+  "attention_allocations": {},
+  "drift_indicators": {}
+}

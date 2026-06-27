@@ -1,0 +1,25 @@
+# Hermes V2 — Benchmark Profile
+name: benchmark
+debug: false
+log_level: INFO
+
+llm:
+  default_model: openrouter/google/gemini-2.5-flash
+  cache_ttl: 0  # No caching for benchmarks
+  max_retries: 5
+
+retrieval:
+  top_k: 15
+  rerank_top_k: 7
+
+orchestrator:
+  max_revisions: 3
+  quality_threshold: 0.9
+
+governance:
+  rate_limit_per_minute: 120
+  max_concurrent_agents: 50
+
+training_data:
+  min_quality_score: 0.9
+  auto_export: true

@@ -1,0 +1,85 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment (keep .env.example, ignore .env)
+.env
+.env.local
+.env.production
+!.env.example
+
+# Databases (large binary files - use LFS or regenerate)
+databases/
+*.db
+
+# Logs
+logs/
+*.log
+
+# Cache
+.cache/
+.dspy_cache/
+.deepeval/
+.ruff_cache/
+.nv/
+.pytest_cache/
+.coverage
+coverage/
+htmlcov/
+
+# Training data output (generated — do not commit)
+training_data/
+
+# Dataset — only ignore generated/cache, keep curated data
+dataset/generated/
+dataset/cache/
+dataset/results.jsonl
+dataset/human_test_upsc/
+
+# Dependencies
+frontend/node_modules/
+
+# Local
+.local/
+
+# OS
+.DS_Store
+
+# Security - never commit certificates
+*.pem
+*.key
+*.crt
+*.p12
+
+# Temporary
+*.tmp
+*.temp
+*.bak
+
+# Jupyter
+.ipynb_checkpoints/
+
+# SQLite
+*.sqlite
+*.sqlite3
+
+# Docker volumes
+volumes/
+docker-data/

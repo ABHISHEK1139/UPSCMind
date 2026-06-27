@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hermes V2 — UPSC Answer Generator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; min-height: 100vh; }
+        .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 2.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header p { color: #888; margin-top: 0.5rem; }
+        .card { background: #1a1a2e; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid #333; }
+        .card h2 { color: #667eea; margin-bottom: 1rem; font-size: 1.1rem; }
+        textarea { width: 100%; height: 120px; background: #0d0d1a; border: 1px solid #333; border-radius: 8px; padding: 1rem; color: #e0e0e0; font-size: 1rem; resize: vertical; }
+        textarea:focus { outline: none; border-color: #667eea; }
+        .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        select, input { width: 100%; background: #0d0d1a; border: 1px solid #333; border-radius: 8px; padding: 0.75rem; color: #e0e0e0; font-size: 0.9rem; }
+        select:focus, input:focus { outline: none; border-color: #667eea; }
+        button { width: 100%; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 8px; color: white; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .answer-box { background: #0d0d1a; border-radius: 8px; padding: 1.5rem; min-height: 200px; white-space: pre-wrap; line-height: 1.6; border: 1px solid #333; }
+        .score-bar { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+        .score-label { width: 100px; font-size: 0.85rem; color: #888; }
+        .score-track { flex: 1; height: 8px; background: #333; border-radius: 4px; overflow: hidden; }
+        .score-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+        .score-val { width: 40px; text-align: right; font-size: 0.85rem; }
+        .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+        .meta-item { text-align: center; padding: 0.75rem; background: #0d0d1a; border-radius: 8px; }
+        .meta-item .label { font-size: 0.75rem; color: #888; }
+        .meta-item .value { font-size: 1.1rem; font-weight: 600; color: #667eea; margin-top: 0.25rem; }
+        .loading { text-align: center; padding: 2rem; }
+        .loading .spinner { width: 40px; height: 40px; border: 3px solid #333; border-top-color: #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error { background: #2a1a1a; border-color: #ff4444; color: #ff6666; padding: 1rem; border-radius: 8px; }
+        .examples { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+        .example-btn { padding: 0.5rem 1rem; background: #0d0d1a; border: 1px solid #333; border-radius: 6px; color: #888; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+        .example-btn:hover { border-color: #667eea; color: #667eea; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Hermes V2</h1>
+            <p>UPSC Civil Services Answer Generator</p>
+        </div>
+
+        <div class="card">
+            <h2>Question</h2>
+            <textarea id="question" placeholder="Enter your UPSC question here... (min 10 characters)"></textarea>
+            <div class="examples">
+                <button class="example-btn" onclick="setExample(0)">Harappan Architecture</button>
+                <button class="example-btn" onclick="setExample(1)">Fiscal Deficit</button>
+                <button class="example-btn" onclick="setExample(2)">Article 21</button>
+                <button class="example-btn" onclick="setExample(3)">Climate Change</button>
+                <button class="example-btn" onclick="setExample(4)">Non-Alignment</button>
+            </div>
+            <div class="row" style="margin-top: 1rem;">
+                <select id="paper">
+                    <option value="">Auto-detect Paper</option>
+                    <option value="GS1">GS1</option>
+                    <option value="GS2">GS2</option>
+                    <option value="GS3">GS3</option>
+                    <option value="GS4">GS4</option>
+                </select>
+                <select id="year">
+                    <option value="">Auto-detect Year</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2021">2021</option>
+                    <option value="2020">2020</option>
+                    <option value="2019">2019</option>
+                    <option value="2018">2018</option>
+                </select>
+                <select id="type">
+                    <option value="">Auto-detect Type</option>
+                    <option value="factual">Factual</option>
+                    <option value="analytical">Analytical</option>
+                    <option value="evaluative">Evaluative</option>
+                    <option value="evolution">Evolution</option>
+                </select>
+            </div>
+            <button id="generateBtn" onclick="generate()" style="margin-top: 1rem;">Generate Answer</button>
+        </div>
+
+        <div class="card" id="resultCard" style="display:none;">
+            <h2>Result</h2>
+            <div id="loading" class="loading" style="display:none;">
+                <div class="spinner"></div>
+                <p>Generating answer... This takes ~2-3 minutes</p>
+            </div>
+            <div id="error" class="error" style="display:none;"></div>
+            <div id="result" style="display:none;">
+                <div class="score-bar">
+                    <span class="score-label">Quality Score</span>
+                    <div class="score-track"><div class="score-fill" id="scoreFill"></div></div>
+                    <span class="score-val" id="scoreVal"></span>
+                </div>
+                <div class="score-bar">
+                    <span class="score-label">Accuracy</span>
+                    <div class="score-track"><div class="score-fill" id="accuracyFill"></div></div>
+                    <span class="score-val" id="accuracyVal"></span>
+                </div>
+                <div class="score-bar">
+                    <span class="score-label">Coverage</span>
+                    <div class="score-track"><div class="score-fill" id="coverageFill"></div></div>
+                    <span class="score-val" id="coverageVal"></span>
+                </div>
+                <div class="meta">
+                    <div class="meta-item"><div class="label">Domain</div><div class="value" id="domain">-</div></div>
+                    <div class="meta-item"><div class="label">Time</div><div class="value" id="time">-</div></div>
+                    <div class="meta-item"><div class="label">Tokens</div><div class="value" id="tokens">-</div></div>
+                </div>
+                <h3 style="margin-top: 1.5rem; color: #667eea;">Answer</h3>
+                <div class="answer-box" id="answerBox"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const examples = [
+            "Discuss the salient features of the Harappan architecture with suitable examples.",
+            "What is fiscal deficit? Discuss its implications for the Indian economy.",
+            "What is the significance of Article 21 in the Indian Constitution?",
+            "Discuss the impact of climate change on India's agriculture and food security.",
+            "Discuss the evolution of India's foreign policy since independence with reference to non-alignment."
+        ];
+
+        function setExample(i) {
+            document.getElementById('question').value = examples[i];
+        }
+
+        function getScoreColor(score) {
+            if (score >= 0.75) return '#4ade80';
+            if (score >= 0.5) return '#fbbf24';
+            return '#f87171';
+        }
+
+        async function generate() {
+            const question = document.getElementById('question').value.trim();
+            if (question.length < 10) {
+                alert('Question must be at least 10 characters');
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            const resultCard = document.getElementById('resultCard');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const result = document.getElementById('result');
+
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+            resultCard.style.display = 'block';
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            result.style.display = 'none';
+
+            const body = { question };
+            const paper = document.getElementById('paper').value;
+            const year = document.getElementById('year').value;
+            const type = document.getElementById('type').value;
+            if (paper) body.paper = paper;
+            if (year) body.year = parseInt(year);
+            if (type) body.type = type;
+
+            try {
+                const response = await fetch(apiConfig.answerUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                    signal: AbortSignal.timeout(300000)
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    error.textContent = data.error;
+                    error.style.display = 'block';
+                } else {
+                    const score = data.critique_score || 0;
+                    document.getElementById('scoreFill').style.width = (score * 100) + '%';
+                    document.getElementById('scoreFill').style.background = getScoreColor(score);
+                    document.getElementById('scoreVal').textContent = score.toFixed(2);
+
+                    const accuracy = data.fact_check_passed ? 0.85 : 0.5;
+                    document.getElementById('accuracyFill').style.width = (accuracy * 100) + '%';
+                    document.getElementById('accuracyFill').style.background = getScoreColor(accuracy);
+                    document.getElementById('accuracyVal').textContent = accuracy.toFixed(2);
+
+                    const coverage = data.guardrails_passed ? 0.9 : 0.5;
+                    document.getElementById('coverageFill').style.width = (coverage * 100) + '%';
+                    document.getElementById('coverageFill').style.background = getScoreColor(coverage);
+                    document.getElementById('coverageVal').textContent = coverage.toFixed(2);
+
+                    document.getElementById('domain').textContent = data.domain || '-';
+                    document.getElementById('time').textContent = (data.total_latency_ms / 1000).toFixed(0) + 's';
+                    document.getElementById('tokens').textContent = data.total_tokens || '-';
+                    document.getElementById('answerBox').textContent = data.answer;
+
+                    result.style.display = 'block';
+                }
+            } catch (err) {
+                error.textContent = 'Error: ' + err.message;
+                error.style.display = 'block';
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Generate Answer';
+        }
+    </script>
+</body>
+</html>
