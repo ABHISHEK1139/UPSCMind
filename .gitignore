@@ -39,10 +39,19 @@ logs/
 .deepeval/
 .ruff_cache/
 .nv/
+.pytest_cache/
+.coverage
+coverage/
+htmlcov/
 
-# Training data output
+# Training data output (generated — do not commit)
 training_data/
-dataset/
+
+# Dataset — only ignore generated/cache, keep curated data
+dataset/generated/
+dataset/cache/
+dataset/results.jsonl
+dataset/human_test_upsc/
 
 # Dependencies
 frontend/node_modules/
@@ -50,17 +59,27 @@ frontend/node_modules/
 # Local
 .local/
 
-# Logs
-logs/
-*.log
-
 # OS
 .DS_Store
-Thumbs.db
 
-# Docker
-docker-compose.override.yml
+# Security - never commit certificates
+*.pem
+*.key
+*.crt
+*.p12
 
-# Test outputs (regenerate with test_upsc.py)
-dataset/human_test_upsc/
-dataset/results.jsonl
+# Temporary
+*.tmp
+*.temp
+*.bak
+
+# Jupyter
+.ipynb_checkpoints/
+
+# SQLite
+*.sqlite
+*.sqlite3
+
+# Docker volumes
+volumes/
+docker-data/
