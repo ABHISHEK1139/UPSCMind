@@ -2,7 +2,7 @@
 # Hermes V2 — Python Dependencies
 # ═══════════════════════════════════════════════════════════════
 # Install: pip install -r requirements.txt
-# All packages below are auto-installed. No manual steps needed.
+# Auto-installs ALL packages used in the codebase. No manual steps needed.
 # ═══════════════════════════════════════════════════════════════
 
 # ── Web & API ────────────────────────────────────────────────────
@@ -44,15 +44,11 @@ langgraph-sdk>=0.1.0
 sentence-transformers>=3.0.0
 rank-bm25>=0.2.2
 
-# ── Memory ────────────────────────────────────────────────────────
-mem0ai>=0.1.0
-
 # ── Guardrails ────────────────────────────────────────────────────
 nemoguardrails>=0.10.0
 
 # ── Evaluation ────────────────────────────────────────────────────
 deepeval>=1.0.0
-ragas>=0.2.0
 
 # ── Background Workers ───────────────────────────────────────────
 celery[redis]>=5.4.0
@@ -66,7 +62,7 @@ opentelemetry-sdk>=1.25.0
 opentelemetry-instrumentation-fastapi>=0.46b0
 structlog>=24.2.0
 
-# ── NLP & Text Processing ─────────────────────────────────────────
+# ── NLP & Data Processing ────────────────────────────────────────
 numpy>=1.26.0
 scikit-learn>=1.5.0
 pandas>=2.2.0
@@ -75,7 +71,6 @@ pandas>=2.2.0
 pymupdf>=1.24.0
 pymupdf4llm>=0.0.12
 pdfplumber>=0.11.0
-marker>=0.4.0
 
 # ── Web Scraping ──────────────────────────────────────────────────
 beautifulsoup4>=4.12.0
@@ -88,7 +83,7 @@ defusedxml>=0.7.1
 # ── Image Processing ──────────────────────────────────────────────
 Pillow>=10.0.0
 
-# ── Google Services (optional — for Google Sheets/Drive) ──────────
+# ── Google Services (optional) ────────────────────────────────────
 google-api-python-client>=2.140.0
 google-auth-oauthlib>=1.2.0
 
