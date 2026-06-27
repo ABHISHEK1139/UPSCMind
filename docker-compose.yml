@@ -147,7 +147,7 @@ services:
       - DATABASE_URL=postgresql+asyncpg://upsc_user:upsc_password@postgres:5432/upsc_db
       - REDIS_URL=redis://redis:6379/0
       - NEO4J_URI=bolt://neo4j:7687
-      - NEO4J_USER: neo4j
+      - NEO4J_USER=neo4j
       - NEO4J_PASSWORD=upsc_neo4j_password
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333

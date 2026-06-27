@@ -60,7 +60,7 @@ Write-Host ""
 
 # Check disk space
 $disk = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='C:'"
-$freeGB = [math]::Free($disk.FreeSpace / 1GB, 1)
+$freeGB = [math]::Round($disk.FreeSpace / 1GB, 1)
 if ($freeGB -lt 10) {
     Write-Fail "Low disk space: ${freeGB}GB free (need 10GB+)"
     $failures++

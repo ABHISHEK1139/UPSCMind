@@ -132,11 +132,11 @@ async def generate_answer_stream(request: AnswerRequest):
     async def event_generator():
         state = _build_initial_state(request)
         try:
-            yield f"data: _json.dumps({{'event': 'started', 'session_id': request.session_id}})\n\n"
+            yield f"data: {_json.dumps({'event': 'started', 'session_id': request.session_id})}\n\n"
             async for chunk in _get_graph().astream(state):
-                yield f"data: _json.dumps({{'event': 'node.update', 'data': str(chunk)}})\n\n"
-            yield f"data: _json.dumps({{'event': 'completed'}})\n\n"
+                yield f"data: {_json.dumps({'event': 'node.update', 'data': str(chunk)})}\n\n"
+            yield f"data: {_json.dumps({'event': 'completed'})}\n\n"
         except Exception as exc:
-            yield f"data: _json.dumps({{'event': 'error', 'error': str(exc)}})\n\n"
+            yield f"data: {_json.dumps({'event': 'error', 'error': str(exc)})}\n\n"
     
     return StreamingResponse(event_generator(), media_type="text/event-stream")

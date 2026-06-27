@@ -83,6 +83,7 @@ async def on_answer_generated(event: str, data: Dict[str, Any]) -> None:
                 ) / 4
 
                 await db.flush()
+                await db.commit()
                 logger.info("[EVENT] Updated progress for student=%s", student_id)
     except Exception as exc:
         logger.warning("[EVENT] Failed to update progress: %s", exc)
