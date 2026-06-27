@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- Added `bcrypt` and `pytest-asyncio` to `requirements.txt` for auto-install
+- Added `pytest.ini` with `asyncio_mode = auto` for async test support
+- Fixed async test decorators in `test_e2e_real.py`
+
 ## [1.0.0] - 2026-06-27
 
 ### Added
