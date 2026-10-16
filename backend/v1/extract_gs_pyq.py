@@ -4,6 +4,7 @@ import json
 import re
 import hashlib
 import pdfplumber
+from pathlib import Path
 
 sys.stdout.reconfigure(encoding='utf-8')
 
