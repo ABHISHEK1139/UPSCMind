@@ -74,6 +74,11 @@ async def on_answer_generated(event: str, data: Dict[str, Any]) -> None:
                     progress.gs1_score = _running_avg(progress.gs1_score, score, progress.total_questions_attempted)
                 elif domain == "Ethics":
                     progress.gs4_score = _running_avg(progress.gs4_score, score, progress.total_questions_attempted)
+                else:
+                    logger.warning(
+                        "[EVENT] Unmapped answer domain %r — subject score not updated",
+                        domain,
+                    )
 
                 progress.total_questions_attempted += 1
                 progress.total_answers_written += 1

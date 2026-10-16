@@ -108,7 +108,7 @@ async def node_fact_check(
         from core.llm_gateway import LLMGateway
 
         gateway = LLMGateway()
-        verifier_response = gateway.complete(
+        verifier_response = await gateway.complete(
             messages=[
                 {"role": "system", "content": _VERIFIER_SYSTEM},
                 {
@@ -179,7 +179,7 @@ async def node_fact_check(
     # ═══════════════════════════════════════════════════════
     if constitutional_weight in ("HIGH", "MEDIUM"):
         try:
-            const_response = gateway.complete(
+            const_response = await gateway.complete(
                 messages=[
                     {"role": "system", "content": _CONSTITUTIONAL_SYSTEM},
                     {

@@ -35,14 +35,16 @@ async def websocket_endpoint(
     receive real-time updates as the LangGraph orchestrator
     processes a question.
     """
-    # Authenticate via JWT token
-    if token:
-        try:
-            from api.security import verify_token
-            verify_token(token)
-        except Exception:
-            await websocket.close(code=4001, reason="Unauthorized")
-            return
+    # Authenticate via JWT token (required — no anonymous connections)
+    if not token:
+        await websocket.close(code=4001, reason="Authentication required")
+        return
+    try:
+        from api.security import verify_token
+        verify_token(token)
+    except Exception:
+        await websocket.close(code=4001, reason="Unauthorized")
+        return
 
     await websocket.accept()
     _active_connections[session_id] = websocket

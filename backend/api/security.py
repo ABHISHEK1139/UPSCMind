@@ -24,7 +24,13 @@ logger = logging.getLogger(__name__)
 
 # ── JWT (simple implementation without PyJWT dependency) ──────────────────
 
-SECRET_KEY = os.environ.get("JWT_SECRET_KEY", secrets.token_hex(32))
+SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError(
+        "JWT_SECRET_KEY environment variable is not set. Refusing to start "
+        "with a random per-process secret: tokens would be invalid across "
+        "workers and restarts."
+    )
 ALGORITHM = "HS256"
 TOKEN_EXPIRY_HOURS = 24
 

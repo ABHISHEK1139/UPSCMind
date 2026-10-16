@@ -15,10 +15,20 @@ from pydantic import BaseModel
 from sqlalchemy import select
 
 from core.database import get_db
+from api.security import get_current_student
 
 logger = __import__("logging").getLogger(__name__)
 
 router = APIRouter()
+
+
+def _require_self(student_id: str, current: Dict[str, Any]) -> None:
+    """Reject requests for another student's data (IDOR guard)."""
+    if current.get("sub") != student_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this student's data",
+        )
 
 # ── Request/Response Models ──────────────────────────────────────────────
 
@@ -113,8 +123,13 @@ async def login(data: LoginRequest, db=Depends(get_db)) -> Dict[str, Any]:
 
 
 @router.get("/profile/{student_id}")
-async def get_profile(student_id: str, db=Depends(get_db)) -> Dict[str, Any]:
+async def get_profile(
+    student_id: str,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
+) -> Dict[str, Any]:
     """Get student profile."""
+    _require_self(student_id, current)
     from domain.students.service import StudentService
 
     service = StudentService(db)
@@ -126,9 +141,13 @@ async def get_profile(student_id: str, db=Depends(get_db)) -> Dict[str, Any]:
 
 @router.put("/profile/{student_id}")
 async def update_profile(
-    student_id: str, data: UpdateProfileRequest, db=Depends(get_db)
+    student_id: str,
+    data: UpdateProfileRequest,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
 ) -> Dict[str, Any]:
     """Update student profile."""
+    _require_self(student_id, current)
     from domain.students.service import StudentService
     from domain.students.models import StudentUpdate
 
@@ -143,8 +162,13 @@ async def update_profile(
 
 
 @router.get("/progress/{student_id}")
-async def get_progress(student_id: str, db=Depends(get_db)) -> Dict[str, Any]:
+async def get_progress(
+    student_id: str,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
+) -> Dict[str, Any]:
     """Get student progress."""
+    _require_self(student_id, current)
     from domain.analytics.service import AnalyticsService
 
     service = AnalyticsService(db)
@@ -152,8 +176,13 @@ async def get_progress(student_id: str, db=Depends(get_db)) -> Dict[str, Any]:
 
 
 @router.get("/topic-mastery/{student_id}")
-async def get_topic_mastery(student_id: str, db=Depends(get_db)) -> Dict[str, Any]:
+async def get_topic_mastery(
+    student_id: str,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
+) -> Dict[str, Any]:
     """Get topic-wise mastery."""
+    _require_self(student_id, current)
     from domain.students.service import StudentService
 
     service = StudentService(db)
@@ -162,13 +191,17 @@ async def get_topic_mastery(student_id: str, db=Depends(get_db)) -> Dict[str, An
 
 
 @router.post("/record-practice")
-async def record_practice(data: TopicUpdateRequest, db=Depends(get_db)) -> Dict[str, Any]:
+async def record_practice(
+    data: TopicUpdateRequest,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
+) -> Dict[str, Any]:
     """Record a practice attempt and update topic mastery."""
     from domain.learning.service import LearningService
     from core.event_manager import get_event_bus
 
     service = LearningService(db, event_bus=get_event_bus())
-    student_id = "demo-student-id"
+    student_id = current["sub"]
     result = await service.record_practice(
         student_id, data.topic, data.score, data.question_type
     )
@@ -176,8 +209,13 @@ async def record_practice(data: TopicUpdateRequest, db=Depends(get_db)) -> Dict[
 
 
 @router.get("/dashboard/{student_id}")
-async def get_dashboard(student_id: str, db=Depends(get_db)) -> Dict[str, Any]:
+async def get_dashboard(
+    student_id: str,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
+) -> Dict[str, Any]:
     """Get complete dashboard data."""
+    _require_self(student_id, current)
     from domain.analytics.service import AnalyticsService
 
     service = AnalyticsService(db)
@@ -185,8 +223,13 @@ async def get_dashboard(student_id: str, db=Depends(get_db)) -> Dict[str, Any]:
 
 
 @router.get("/study-plan/{student_id}")
-async def get_study_plan(student_id: str, db=Depends(get_db)) -> Dict[str, Any]:
+async def get_study_plan(
+    student_id: str,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
+) -> Dict[str, Any]:
     """Get today's study plan."""
+    _require_self(student_id, current)
     from domain.study_planner.service import StudyPlannerService
 
     service = StudyPlannerService(db)
@@ -194,8 +237,13 @@ async def get_study_plan(student_id: str, db=Depends(get_db)) -> Dict[str, Any]:
 
 
 @router.get("/revision-due/{student_id}")
-async def get_revision_due(student_id: str, db=Depends(get_db)) -> Dict[str, Any]:
+async def get_revision_due(
+    student_id: str,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
+) -> Dict[str, Any]:
     """Get topics due for revision."""
+    _require_self(student_id, current)
     from domain.revision.service import RevisionService
 
     service = RevisionService(db)
@@ -205,13 +253,17 @@ async def get_revision_due(student_id: str, db=Depends(get_db)) -> Dict[str, Any
 
 
 @router.post("/notes/generate")
-async def generate_notes(data: dict, db=Depends(get_db)) -> Dict[str, Any]:
+async def generate_notes(
+    data: dict,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
+) -> Dict[str, Any]:
     """Generate notes from content."""
     from domain.notes.service import NotesService
 
     service = NotesService(db)
     return await service.generate_notes(
-        student_id=data.get("student_id", "demo"),
+        student_id=current["sub"],
         topic=data.get("topic", "General"),
         content=data.get("content", ""),
         source=data.get("source", "answer"),
@@ -220,17 +272,29 @@ async def generate_notes(data: dict, db=Depends(get_db)) -> Dict[str, Any]:
 
 @router.get("/mock-tests/generate")
 async def generate_mock_test(
-    student_id: str, paper: str = "GS2", num_questions: int = 10, db=Depends(get_db)
+    student_id: str,
+    paper: str = "GS2",
+    num_questions: int = 10,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
 ) -> Dict[str, Any]:
     """Generate a mock test."""
+    _require_self(student_id, current)
     from domain.mock_tests.service import MockTestService
 
     service = MockTestService(db)
-    return await service.generate_mock_test(student_id, paper, num_questions)
+    try:
+        return await service.generate_mock_test(student_id, paper, num_questions)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/mock-tests/evaluate")
-async def evaluate_answer(data: dict, db=Depends(get_db)) -> Dict[str, Any]:
+async def evaluate_answer(
+    data: dict,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
+) -> Dict[str, Any]:
     """Evaluate a mock test answer."""
     from domain.mock_tests.service import MockTestService
 
@@ -256,9 +320,13 @@ async def get_daily_current_affairs(date: Optional[str] = None) -> Dict[str, Any
 
 @router.get("/interview/mock")
 async def get_mock_interview(
-    student_id: str, categories: Optional[str] = None, db=Depends(get_db)
+    student_id: str,
+    categories: Optional[str] = None,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
 ) -> Dict[str, Any]:
     """Generate a mock interview session."""
+    _require_self(student_id, current)
     from domain.interview.service import InterviewService
 
     service = InterviewService(db)
@@ -267,8 +335,13 @@ async def get_mock_interview(
 
 
 @router.get("/analytics/monthly-report/{student_id}")
-async def get_monthly_report(student_id: str, db=Depends(get_db)) -> Dict[str, Any]:
+async def get_monthly_report(
+    student_id: str,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
+) -> Dict[str, Any]:
     """Get monthly progress report."""
+    _require_self(student_id, current)
     from domain.analytics.service import AnalyticsService
 
     service = AnalyticsService(db)
@@ -276,8 +349,13 @@ async def get_monthly_report(student_id: str, db=Depends(get_db)) -> Dict[str, A
 
 
 @router.delete("/account/{student_id}")
-async def delete_account(student_id: str, db=Depends(get_db)) -> Dict[str, Any]:
+async def delete_account(
+    student_id: str,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
+) -> Dict[str, Any]:
     """Delete student account and all associated data."""
+    _require_self(student_id, current)
     from domain.students.service import StudentService
     from domain.students.models import Student
 
@@ -293,7 +371,11 @@ async def delete_account(student_id: str, db=Depends(get_db)) -> Dict[str, Any]:
 
 
 @router.post("/quiz/generate")
-async def generate_quiz(data: dict, db=Depends(get_db)) -> Dict[str, Any]:
+async def generate_quiz(
+    data: dict,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
+) -> Dict[str, Any]:
     """Generate a quiz for a topic."""
     from domain.learning.service import LearningService
 
@@ -323,8 +405,13 @@ async def generate_quiz(data: dict, db=Depends(get_db)) -> Dict[str, Any]:
 
 
 @router.get("/recommendations/{student_id}")
-async def get_recommendations(student_id: str, db=Depends(get_db)) -> Dict[str, Any]:
+async def get_recommendations(
+    student_id: str,
+    db=Depends(get_db),
+    current: Dict[str, Any] = Depends(get_current_student),
+) -> Dict[str, Any]:
     """Get personalized topic recommendations."""
+    _require_self(student_id, current)
     from domain.learning.service import LearningService
 
     service = LearningService(db)

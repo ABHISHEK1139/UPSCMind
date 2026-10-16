@@ -115,7 +115,7 @@ async def node_review(
         f"Answer to evaluate:\n{answer}"
     )
 
-    llm_response = gateway.complete(
+    llm_response = await gateway.complete(
         messages=[
             {"role": "system", "content": _FALLBACK_SYSTEM},
             {"role": "user", "content": user_content},

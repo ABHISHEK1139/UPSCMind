@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     # ── Application ─────────────────────────────────────────
     APP_ENV: str = "development"
-    APP_DEBUG: bool = True
+    APP_DEBUG: bool = False
     APP_VERSION: str = "2.0.0"
     ACTIVE_PROFILE: str = "development"
 
@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     API_DOCS_ENDPOINT: str = "/api/docs"
 
     # ── Postgres ──────────────────────────────────────────────
-    DATABASE_URL: str = "postgresql+asyncpg://upsc_user:upsc_password@hermes_postgres:5432/upsc_db"
+    DATABASE_URL: str = ""
 
     # ── Redis ─────────────────────────────────────────────────
     REDIS_URL: str = "redis://hermes_redis:6379/0"
@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     # ── Neo4j ─────────────────────────────────────────────────
     NEO4J_URI: str = "bolt://hermes_neo4j:7687"
     NEO4J_USER: str = "neo4j"
-    NEO4J_PASSWORD: str = "upsc_neo4j_password"
+    NEO4J_PASSWORD: str = ""
 
     # ── Qdrant ────────────────────────────────────────────────
     QDRANT_HOST: str = "localhost"
@@ -79,7 +79,7 @@ class Settings(BaseSettings):
     # ── MinIO Object Storage ──────────────────────────────────
     MINIO_ENDPOINT: str = "localhost:9000"
     MINIO_ACCESS_KEY: str = "minioadmin"
-    MINIO_SECRET_KEY: str = "minioadmin"
+    MINIO_SECRET_KEY: str = ""
     MINIO_BUCKET_DATASETS: str = "hermes-datasets"
     MINIO_BUCKET_LOGS: str = "hermes-logs"
 

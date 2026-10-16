@@ -131,7 +131,7 @@ async def node_planning(
     gateway = LLMGateway()
 
     # Step 1 — Framework selection via gateway
-    fw_response = gateway.complete(
+    fw_response = await gateway.complete(
         messages=[
             {"role": "system", "content": _FRAMEWORK_SYSTEM},
             {
@@ -167,7 +167,7 @@ async def node_planning(
     differentiator = fw_parsed.get("differentiator", "")
 
     # Step 2 — Reasoning plan via gateway
-    plan_response = gateway.complete(
+    plan_response = await gateway.complete(
         messages=[
             {"role": "system", "content": _PLAN_SYSTEM},
             {

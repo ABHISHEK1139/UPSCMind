@@ -11,8 +11,12 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import select
+
+from core.database import get_db
+from domain.feedback.models import Feedback
 
 logger = logging.getLogger(__name__)
 
@@ -35,14 +39,16 @@ class FeedbackResponse(BaseModel):
     feedback_id: str
 
 
-# ── In-memory store (replace with Postgres in production) ────────────
+# ── In-memory store (fallback only if the database write fails) ─────────
 
 _feedback_store: List[Dict[str, Any]] = []
 
 
 @router.post("/feedback", response_model=FeedbackResponse)
-async def submit_feedback(request: FeedbackRequest) -> FeedbackResponse:
-    """Submit feedback for a generated answer."""
+async def submit_feedback(
+    request: FeedbackRequest, db=Depends(get_db)
+) -> FeedbackResponse:
+    """Submit feedback for a generated answer (persisted to the database)."""
     import uuid
 
     feedback_id = str(uuid.uuid4())
@@ -55,7 +61,22 @@ async def submit_feedback(request: FeedbackRequest) -> FeedbackResponse:
         "domain": request.domain,
         "collected_at": datetime.now(timezone.utc).isoformat(),
     }
-    _feedback_store.append(record)
+
+    # Persist durably; keep the in-memory store only as a fallback
+    try:
+        db.add(Feedback(
+            id=feedback_id,
+            session_id=request.session_id,
+            rating=request.rating,
+            corrections=request.corrections,
+            comments=request.comments,
+            domain=request.domain,
+        ))
+        await db.commit()
+    except Exception as exc:
+        await db.rollback()
+        logger.warning("[FEEDBACK] DB write failed, using in-memory fallback: %s", exc)
+        _feedback_store.append(record)
 
     # Also update the trajectory record if it exists
     try:
@@ -77,26 +98,47 @@ async def submit_feedback(request: FeedbackRequest) -> FeedbackResponse:
 
 
 @router.get("/feedback/{session_id}")
-async def get_feedback(session_id: str) -> Dict[str, Any]:
+async def get_feedback(session_id: str, db=Depends(get_db)) -> Dict[str, Any]:
     """Get feedback for a specific session."""
-    feedbacks = [f for f in _feedback_store if f["session_id"] == session_id]
+    result = await db.execute(
+        select(Feedback).where(Feedback.session_id == session_id)
+    )
+    feedbacks = [
+        {
+            "id": f.id,
+            "session_id": f.session_id,
+            "rating": f.rating,
+            "corrections": f.corrections,
+            "comments": f.comments,
+            "domain": f.domain,
+            "collected_at": f.collected_at.isoformat() if f.collected_at else None,
+        }
+        for f in result.scalars().all()
+    ]
+    # Include any records held in the in-memory fallback store
+    feedbacks.extend(f for f in _feedback_store if f["session_id"] == session_id)
     return {"session_id": session_id, "feedbacks": feedbacks}
 
 
 @router.get("/feedback/stats/summary")
-async def feedback_summary() -> Dict[str, Any]:
+async def feedback_summary(db=Depends(get_db)) -> Dict[str, Any]:
     """Get summary statistics of all feedback."""
-    if not _feedback_store:
+    result = await db.execute(select(Feedback.rating, Feedback.domain))
+    rows = result.all()
+    records = [{"rating": r, "domain": d} for r, d in rows]
+    records.extend(_feedback_store)
+
+    if not records:
         return {"total": 0, "avg_rating": 0, "by_domain": {}}
 
-    ratings = [f["rating"] for f in _feedback_store]
+    ratings = [f["rating"] for f in records]
     by_domain: Dict[str, int] = {}
-    for f in _feedback_store:
-        domain = f.get("domain", "unknown")
+    for f in records:
+        domain = f.get("domain") or "unknown"
         by_domain[domain] = by_domain.get(domain, 0) + 1
 
     return {
-        "total": len(_feedback_store),
+        "total": len(records),
         "avg_rating": sum(ratings) / len(ratings),
         "rating_distribution": {str(i): ratings.count(i) for i in range(1, 6)},
         "by_domain": by_domain,

@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,13 @@ async def run_benchmark(
     dataset_path: str = "dataset/mains_gs_all.jsonl",
 ) -> Dict[str, Any]:
     """Trigger a benchmark run in the background."""
+    from domain.evaluation.benchmark_runner import BenchmarkRunner
+
+    try:
+        BenchmarkRunner.resolve_dataset_path(dataset_path)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     try:
         from workers.tasks_evaluation import run_evaluation_benchmark
 

@@ -95,7 +95,7 @@ async def node_topic_detection(
     from core.llm_gateway import LLMGateway
 
     gateway = LLMGateway()
-    llm_response = gateway.complete(
+    llm_response = await gateway.complete(
         messages=[
             {"role": "system", "content": _FALLBACK_SYSTEM_PROMPT},
             {"role": "user", "content": question},

@@ -106,7 +106,7 @@ async def node_improvement(
         f"Critique:\n{critique}"
     )
 
-    llm_response = gateway.complete(
+    llm_response = await gateway.complete(
         messages=[
             {"role": "system", "content": _FALLBACK_SYSTEM},
             {"role": "user", "content": user_content},

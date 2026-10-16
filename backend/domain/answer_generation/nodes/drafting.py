@@ -120,7 +120,7 @@ async def node_drafting(
         f"Retrieved Context:\n{context}"
     )
 
-    llm_response = gateway.complete(
+    llm_response = await gateway.complete(
         messages=[
             {"role": "system", "content": _FALLBACK_SYSTEM},
             {"role": "user", "content": user_content},
