@@ -9,6 +9,7 @@ Fusion (RRF).
 from __future__ import annotations
 
 import asyncio
+import functools
 import logging
 import os
 from typing import Any, Optional
@@ -126,7 +127,15 @@ class HybridRetriever:
 
         # ── Dense retrieval (run in thread to not block event loop) ──
         dense_results = await asyncio.get_event_loop().run_in_executor(
-            None, self._dense_search_sync, query, k * 2, filters
+            None,
+            functools.partial(
+                self._dense_search_sync,
+                query,
+                k * 2,
+                filters,
+                prefer_fresh=prefer_fresh,
+                current_date=current_date,
+            ),
         )
 
         # ── Sparse retrieval ────────────────────────────────
@@ -141,7 +150,12 @@ class HybridRetriever:
         return fused
 
     def _dense_search_sync(
-        self, query: str, k: int, filters: Optional[dict] = None,
+        self,
+        query: str,
+        k: int,
+        filters: Optional[dict] = None,
+        prefer_fresh: bool = True,
+        current_date: Optional[str] = None,
     ) -> list[RetrievedChunk]:
         """Dense vector search via Qdrant (sync, for run_in_executor)."""
         if self._dense_model is None or self._client is None:

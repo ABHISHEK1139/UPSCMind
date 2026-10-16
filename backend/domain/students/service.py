@@ -20,6 +20,7 @@ from sqlalchemy.orm import selectinload
 from domain.students.models import (
     Base, Student, StudentPreference, StudentProgress, Topic,
     StudentCreate, StudentUpdate, StudentProfile, TopicMasteryOut, ProgressOut,
+    student_topic_mastery,
 )
 from api.security import create_token, sanitize_input, sanitize_email, validate_password
 

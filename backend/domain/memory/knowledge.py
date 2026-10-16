@@ -43,7 +43,6 @@ class KnowledgeMemory:
             # TODO: replace with real embedding call via LLMGateway
             query_vector = [0.0] * self._embedding_dim
 
-            from qdrant_client.models import models as qmodels
             try:
                 result_points = self._qdrant.query_points(
                     collection_name=self._collection,

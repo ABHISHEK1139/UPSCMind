@@ -60,6 +60,11 @@ class MockTestService:
         ]
 
         questions = sample_questions[:num_questions]
+        if len(questions) < num_questions:
+            raise ValueError(
+                f"Only {len(questions)} questions available; "
+                f"requested {num_questions}"
+            )
 
         return {
             "id": str(uuid.uuid4()),

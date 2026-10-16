@@ -19,8 +19,33 @@ logger = logging.getLogger(__name__)
 class BenchmarkRunner:
     """Run benchmark questions and collect metrics."""
 
+    # Dataset files must live under this directory (relative to the
+    # backend working directory). User-supplied paths are confined here.
+    DATASET_DIR = Path("dataset")
+
     def __init__(self) -> None:
         self._results: List[Dict[str, Any]] = []
+
+    @staticmethod
+    def resolve_dataset_path(path: str) -> Path:
+        """
+        Resolve a user-supplied dataset path, confined to DATASET_DIR.
+
+        Raises ValueError for absolute paths, ``..`` traversal, or paths
+        that resolve outside the dataset directory.
+        """
+        p = Path(path)
+        if p.is_absolute() or ".." in p.parts:
+            raise ValueError(f"Invalid dataset path: {path!r}")
+        # Accept the documented default form ("dataset/<file>") as well as
+        # bare relative paths — both resolve inside DATASET_DIR.
+        if p.parts[:1] == (BenchmarkRunner.DATASET_DIR.name,):
+            p = Path(*p.parts[1:])
+        base = BenchmarkRunner.DATASET_DIR.resolve()
+        resolved = (base / p).resolve()
+        if resolved != base and base not in resolved.parents:
+            raise ValueError(f"Dataset path escapes dataset directory: {path!r}")
+        return resolved
 
     def run(
         self,
@@ -127,10 +152,10 @@ class BenchmarkRunner:
 
     @staticmethod
     def _load_questions(path: str, n: int) -> list[str]:
-        """Load questions from a JSONL file."""
+        """Load questions from a JSONL file (confined to the dataset directory)."""
         questions = []
-        p = Path(path)
-        if not p.exists():
+        p = BenchmarkRunner.resolve_dataset_path(path)
+        if not p.is_file():
             logger.warning("[BENCHMARK] Dataset not found: %s", path)
             return questions
         with open(p, "r", encoding="utf-8") as f:

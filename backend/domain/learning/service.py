@@ -183,7 +183,7 @@ class LearningService:
             mastery.last_practiced = now
 
             # State transition
-            if mastery.score >= MASTERY_THRESHOLD and total_attempts >= 3:
+            if mastery.score >= MASTERED_THRESHOLD and total_attempts >= 3:
                 mastery.state = "MASTERED"
                 mastery.next_revision = now + timedelta(days=7)
                 mastery.total_revisions += 1
